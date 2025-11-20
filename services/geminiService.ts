@@ -66,6 +66,39 @@ const preprocessImage = (base64Str: string): Promise<string> => {
 };
 
 /**
+ * Checks if the car already has a visible license plate.
+ */
+const checkForExistingPlate = async (imageBase64: string): Promise<boolean> => {
+  try {
+    const base64Data = imageBase64.split(',')[1];
+    const mimeType = imageBase64.match(/data:([^;]+);/)?.[1] || 'image/jpeg';
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              data: base64Data,
+              mimeType: mimeType,
+            },
+          },
+          {
+            text: "Analyze the front and rear bumpers of the car in this image. Look specifically for an oblong, rectangular, or square object mounted on the bumper where a license plate is typically found. Is there a license plate present? Answer strictly with YES or NO.",
+          },
+        ],
+      },
+    });
+
+    const text = response.text?.trim().toUpperCase() || '';
+    return text.includes('YES');
+  } catch (e) {
+    console.warn("Failed to check for existing plate:", e);
+    return false;
+  }
+};
+
+/**
  * Verifies if the generated image contains the correct plate number.
  */
 const verifyPlateContent = async (imageBase64: string, expectedNumber: string): Promise<boolean> => {
@@ -110,7 +143,8 @@ export const generatePlate = async (
   plateNumber: string,
   plateCountry: string,
   mode: 'add' | 'replace',
-  onProgress?: (status: string) => void
+  onProgress?: (status: string) => void,
+  skipDetection: boolean = false
 ): Promise<string> => {
   if (!apiKey) {
     throw new Error("API Key is missing in environment variables.");
@@ -118,6 +152,15 @@ export const generatePlate = async (
 
   if (onProgress) onProgress('Checking image...');
   const processedImage = await preprocessImage(imageBase64);
+
+  // Check for existing plate if in 'add' mode and detection is not skipped
+  if (mode === 'add' && !skipDetection) {
+    if (onProgress) onProgress('Scanning for existing plates...');
+    const hasPlate = await checkForExistingPlate(processedImage);
+    if (hasPlate) {
+      throw new Error("PLATE_DETECTED_CONFIRMATION");
+    }
+  }
 
   const MAX_RETRIES = 4;
   const base64Data = processedImage.split(',')[1];

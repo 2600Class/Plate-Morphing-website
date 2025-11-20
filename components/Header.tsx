@@ -15,8 +15,18 @@ const Header: React.FC = () => {
             PlateMorph AI
           </h1>
         </div>
-        <div className="text-xs font-medium text-slate-500 bg-slate-800 px-2 py-1 rounded border border-slate-700">
-          Powered by Gemini 2.5
+        <div className="flex items-center space-x-4">
+          <a 
+            href="https://youtube.com/@theaverageirishtrainspotter" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
+            My YT ;)
+          </a>
+          <div className="text-xs font-medium text-slate-500 bg-slate-800 px-2 py-1 rounded border border-slate-700">
+            Powered by Gemini 2.5
+          </div>
         </div>
       </div>
     </header>
