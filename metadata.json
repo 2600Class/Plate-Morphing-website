@@ -1,0 +1,5 @@
+{
+  "name": "PlateMorph AI",
+  "description": "An AI-powered image editor that seamlessly replaces car license plates with custom countries and numbers using Gemini 2.5 Flash Image.",
+  "requestFramePermissions": []
+}
